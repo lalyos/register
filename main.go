@@ -39,7 +39,7 @@ func init() {
 	basic = &registry.BasicAuth{user, password}
 	var err error
 	readToken, err = cli.Hub.GetReadTokenWithAuth("sequenceiq/cloudbreak", basic)
-	//writeToken, err = cli.Hub.GetWriteToken("sequenceiq/cloudbreak", basic)
+	writeToken, err = cli.Hub.GetWriteToken("sequenceiq/cloudbreak", basic)
 	if err != nil {
 		panic(err)
 	}
