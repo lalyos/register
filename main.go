@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/CenturyLinkLabs/docker-reg-client/registry"
 )
@@ -11,6 +12,7 @@ var cli *registry.Client
 var basic *registry.BasicAuth
 var readToken *registry.TokenAuth
 var writeToken *registry.TokenAuth
+var repo string
 
 func search() {
 	results, err := cli.Search.Query("sequenceiq", 1, 25)
@@ -38,8 +40,12 @@ func init() {
 
 	basic = &registry.BasicAuth{user, password}
 	var err error
-	readToken, err = cli.Hub.GetReadTokenWithAuth("sequenceiq/cloudbreak", basic)
-	writeToken, err = cli.Hub.GetWriteToken("sequenceiq/cloudbreak", basic)
+	repo = os.Args[1]
+	if !strings.ContainsRune(repo, '/') {
+		repo = user + "/" + repo
+	}
+	readToken, err = cli.Hub.GetReadTokenWithAuth(repo, basic)
+	//writeToken, err = cli.Hub.GetWriteToken("sequenceiq/cloudbreak", basic)
 	if err != nil {
 		panic(err)
 	}
@@ -49,7 +55,7 @@ func init() {
 }
 
 func listTags() {
-	tm, err := cli.Repository.ListTags("sequenceiq/cloudbreak", readToken)
+	tm, err := cli.Repository.ListTags(repo, readToken)
 	if err != nil {
 		panic(err)
 	}
