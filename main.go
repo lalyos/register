@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	"net/http/httputil"
 	"os"
 	"strings"
 
@@ -25,7 +27,29 @@ func search() {
 	}
 }
 
+type debugTransport struct {
+	transport http.RoundTripper
+}
+
+func NewDebugTransport() *debugTransport {
+	return &debugTransport{
+		transport: http.DefaultTransport,
+	}
+}
+
+func (d *debugTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+	if os.Getenv("DEBUG") != "" {
+		fmt.Fprintf(os.Stderr, "\n=====> %s\n", r.URL)
+		dump, _ := httputil.DumpRequest(r, true)
+		fmt.Println(string(dump[:len(dump)]))
+	}
+	resp, err := d.transport.RoundTrip(r)
+	return resp, err
+}
+
 func init() {
+	http.DefaultTransport = NewDebugTransport()
+
 	cli = registry.NewClient()
 	user := os.Getenv("DOCKER_HUB_USER")
 	password := os.Getenv("DOCKER_HUB_PASSWORD")
